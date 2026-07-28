@@ -1,3 +1,4 @@
+
 ## Day 7 — Student API
 
 Built a simple FastAPI project to practice Pydantic models, routing, and input validation.
@@ -16,3 +17,19 @@ Built a simple FastAPI project to practice Pydantic models, routing, and input v
 ### What I learned
 - Always confirm `pwd` and `ls` match what you expect before debugging code — sometimes the bug isn't the code, it's the location.
 - FastAPI + Pydantic validation happens automatically — invalid input never even reaches your route function.
+=======
+# Student API
+   A simple FastAPI application with basic routes.
+
+
+## Setup
+
+1. Create and activate a virtual environment:
+'''
+   bash
+python3 -m venv venv 
+source venv/bin/activate
+
+## API Docs
+![API docs screenshot](docs-screenshot.png)
+>>>>>>> 45f6176137f0718c51df930150da1b78d76afd04

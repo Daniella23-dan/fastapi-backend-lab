@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException
 from models import Student
 
@@ -27,3 +28,19 @@ def get_student(student_id: int):
 def create_student(student: Student):
     students.append(student)
     return student
+=======
+ from fastapi import FASTAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+   return {"meassage": "Welcome to the Student API"}
+
+
+
+@app.get("/health")
+def health_check():
+     return {"status": "ok"}
+>>>>>>> 45f6176137f0718c51df930150da1b78d76afd04

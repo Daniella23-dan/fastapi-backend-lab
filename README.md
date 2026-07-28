@@ -1,5 +1,5 @@
 
-## Day 7 — Student API
+## Day 6 — Student API
 
 Built a simple FastAPI project to practice Pydantic models, routing, and input validation.
 
@@ -33,3 +33,29 @@ source venv/bin/activate
 ## API Docs
 ![API docs screenshot](docs-screenshot.png)
 >>>>>>> 45f6176137f0718c51df930150da1b78d76afd04
+
+
+## Day 7 — Update & Delete (CRUD Complete)
+
+Extended the Student API with full CRUD support and proper HTTP status codes.
+
+### What I built
+- `PUT /students/{id}` — updates an existing student, returns 200 with updated record
+- `DELETE /students/{id}` — removes a student, returns 200 with a confirmation message
+- Both routes return 404 with a clear message if the student ID doesn't exist
+
+### Challenges
+- A merge conflict from an earlier GitHub sync left leftover conflict markers
+  (`=======`, `>>>>>>>`) inside `main.py`, along with duplicated/broken code
+  (typos like `respoense_model`, a second `FastAPI()` instance). This caused
+  a `SyntaxError` on startup.
+- Fixed by rewriting the file cleanly instead of patching each broken line,
+  then confirming with `grep -n "<<<<<<<\|=======\|>>>>>>>" main.py` that no
+  markers remained.
+
+### What I learned
+- Always check for leftover merge conflict markers after resolving a merge —
+  `grep` is a fast way to confirm a file is clean.
+- POST returns 201 (created), while PUT and DELETE return 200 (success on an
+  existing resource) — the status code communicates *what kind* of success
+  happened, not just that it succeeded.

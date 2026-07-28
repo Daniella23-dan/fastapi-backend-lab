@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException
 from models import Student
 
@@ -28,19 +27,26 @@ def get_student(student_id: int):
 def create_student(student: Student):
     students.append(student)
     return student
-=======
- from fastapi import FASTAPI
-
-app = FastAPI()
 
 
-@app.get("/")
-def read_root():
-   return {"meassage": "Welcome to the Student API"}
+@app.put("/students/{student_id}", response_model=Student, status_code=200)
+def update_student(student_id: int, updated_student: Student):
+    for index, s in enumerate(students):
+        if s.id == student_id:
+            students[index] = updated_student
+            return updated_student
+    raise HTTPException(status_code=404, detail="Student not found")
 
+
+@app.delete("/students/{student_id}", status_code=200)
+def delete_student(student_id: int):
+    for index, s in enumerate(students):
+        if s.id == student_id:
+            students.pop(index)
+            return {"message": f"Student with id {student_id} deleted"}
+    raise HTTPException(status_code=404, detail="Student not found")
 
 
 @app.get("/health")
 def health_check():
-     return {"status": "ok"}
->>>>>>> 45f6176137f0718c51df930150da1b78d76afd04
+    return {"status": "ok"}

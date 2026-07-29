@@ -59,3 +59,29 @@ Extended the Student API with full CRUD support and proper HTTP status codes.
 - POST returns 201 (created), while PUT and DELETE return 200 (success on an
   existing resource) — the status code communicates *what kind* of success
   happened, not just that it succeeded.
+
+
+
+  ## Day 8 — Database Integration (PostgreSQL + SQLModel)
+
+Replaced the in-memory mock data with a real PostgreSQL database, so data now persists across server restarts.
+
+### What I built
+- Installed PostgreSQL locally and created a `student_api` database with a dedicated user
+- Redefined `Student` as a SQLModel table (combines Pydantic validation with a real database table)
+- Added a database engine and session dependency, injected into each route
+- Updated all five routes (GET all, GET one, POST, PUT, DELETE) to read/write from PostgreSQL instead of a Python list
+- Stored the database connection string in `.env`, loaded via `python-dotenv`, and excluded from GitHub via `.gitignore`
+
+### Challenges
+- Accidentally created `.env` and `requirements.txt` files outside the project folder before realizing the terminal wasn't `cd`'d into `student-api`.
+- Had two virtual environments (`venv` and `.venv`) after a mixed setup; confirmed the active one with `which python` before removing the unused one.
+- Hit a `permission denied for schema public` error when SQLModel tried to create the table — PostgreSQL 15+ restricts schema permissions by default. Fixed by explicitly granting schema privileges to the database user.
+- Pasted the wrong file contents into `models.py` and `main.py` at one point, causing a circular import; fixed by rewriting each file with only its intended content.
+- Discovered `.venv` (an old, unused virtual environment) had been accidentally committed to git early on. Removed it from tracking as part of this update.
+
+### What I learned
+- SQLModel combines a Pydantic model and a SQLAlchemy table definition in one class — no need to maintain them separately.
+- FastAPI's dependency injection (`Depends(get_session)`) hands each route a fresh database session automatically.
+- Restarting the server and confirming data survives is the real test that a database (not memory) is being used.
+- Never commit `venv`/`.venv` folders or `.env` files — `.gitignore` should be set up *before* the first commit, not after.

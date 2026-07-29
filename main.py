@@ -1,50 +1,74 @@
-from fastapi import FastAPI, HTTPException
+import os
+from typing import Optional
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Depends
+from sqlmodel import SQLModel, Session, create_engine, select
+
 from models import Student
+
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
 app = FastAPI(title="Student API")
 
-students: list[Student] = [
-    Student(id=1, name="Angel Dani", age=20, email="angel@example.com", course="Economics"),
-    Student(id=2, name="Susan Peters", age=25, email="susan@example.com", course="Geography"),
-    Student(id=3, name="Carine Joy", age=18, email="carine@example.com", course="Physics"),
-]
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+
+@app.on_event("startup")
+def on_startup():
+    SQLModel.metadata.create_all(engine)
 
 
 @app.get("/students", response_model=list[Student])
-def get_students():
-    return students
+def get_students(session: Session = Depends(get_session)):
+    return session.exec(select(Student)).all()
 
 
 @app.get("/students/{student_id}", response_model=Student)
-def get_student(student_id: int):
-    for s in students:
-        if s.id == student_id:
-            return s
-    raise HTTPException(status_code=404, detail="Student not found")
+def get_student(student_id: int, session: Session = Depends(get_session)):
+    student = session.get(Student, student_id)
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return student
 
 
 @app.post("/students", response_model=Student, status_code=201)
-def create_student(student: Student):
-    students.append(student)
+def create_student(student: Student, session: Session = Depends(get_session)):
+    session.add(student)
+    session.commit()
+    session.refresh(student)
     return student
 
 
 @app.put("/students/{student_id}", response_model=Student, status_code=200)
-def update_student(student_id: int, updated_student: Student):
-    for index, s in enumerate(students):
-        if s.id == student_id:
-            students[index] = updated_student
-            return updated_student
-    raise HTTPException(status_code=404, detail="Student not found")
+def update_student(student_id: int, updated_student: Student, session: Session = Depends(get_session)):
+    student = session.get(Student, student_id)
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    student.name = updated_student.name
+    student.email = updated_student.email
+    student.age = updated_student.age
+    student.course = updated_student.course
+    session.add(student)
+    session.commit()
+    session.refresh(student)
+    return student
 
 
 @app.delete("/students/{student_id}", status_code=200)
-def delete_student(student_id: int):
-    for index, s in enumerate(students):
-        if s.id == student_id:
-            students.pop(index)
-            return {"message": f"Student with id {student_id} deleted"}
-    raise HTTPException(status_code=404, detail="Student not found")
+def delete_student(student_id: int, session: Session = Depends(get_session)):
+    student = session.get(Student, student_id)
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    session.delete(student)
+    session.commit()
+    return {"message": f"Student with id {student_id} deleted"}
 
 
 @app.get("/health")

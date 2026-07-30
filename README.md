@@ -1,5 +1,32 @@
+# Student API
 
-## Day 6 — Student API
+A FastAPI project built incrementally over a series of daily challenges — starting from a simple in-memory CRUD API and evolving into a full application with PostgreSQL persistence and JWT authentication.
+
+## Features
+
+- Full CRUD for student records (GET, POST, PUT, DELETE)
+- Input validation via Pydantic/SQLModel (positive age, valid email format)
+- PostgreSQL database persistence via SQLModel
+- User registration and login with bcrypt password hashing
+- JWT-based authentication protecting write access to student data
+
+## Tech Stack
+
+- **FastAPI** — web framework
+- **SQLModel** — ORM combining Pydantic validation + SQLAlchemy tables
+- **PostgreSQL** — database
+- **Passlib (bcrypt)** — password hashing
+- **python-jose** — JWT creation and verification
+
+## Setup
+
+```bash
+git clone <your-repo-url>
+cd student-api
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
 
 Built a simple FastAPI project to practice Pydantic models, routing, and input validation.
 
@@ -35,7 +62,30 @@ source venv/bin/activate
 >>>>>>> 45f6176137f0718c51df930150da1b78d76afd04
 
 
+## Day 6 — Read Operations (Pydantic Models & Path Parameters)
+
+Built the foundational Student API with in-memory mock data, basic CRUD-read routes, and input validation.
+
+### What I built
+- `Student` Pydantic model with fields: id, name, email, age, course
+- A list of mock students held in memory (no database yet)
+- `GET /students` — returns all students
+- `GET /students/{id}` — returns one student, or a 404 if the ID doesn't exist
+- `POST /students` — accepts a student body and adds it to the in-memory list
+- Input validation: age must be a positive integer, email must be a valid format
+
+### Challenges
+- Ran into repeated `ModuleNotFoundError` and `SyntaxError` issues early on because files were being created in the wrong folder, or terminal copy-paste split single lines of code across two lines.
+- Fixed by consistently checking `pwd`/`ls` before troubleshooting code, and by opening files directly with `code <filename>` from the terminal to guarantee I was editing the file that actually lived in my project folder.
+
+### What I learned
+- Pydantic validates incoming data automatically — invalid input (like a negative age or a malformed email) is rejected with a `422` before it ever reaches my route logic.
+- FastAPI's `/docs` page is generated directly from the Pydantic model, so accurate field types up front save debugging time later.
+- A location mismatch between terminal and editor is one of the most common (and confusing) sources of "file not found" errors — always confirm both are pointed at the same folder.
+
+
 ## Day 7 — Update & Delete (CRUD Complete)
+
 
 Extended the Student API with full CRUD support and proper HTTP status codes.
 
@@ -85,3 +135,26 @@ Replaced the in-memory mock data with a real PostgreSQL database, so data now pe
 - FastAPI's dependency injection (`Depends(get_session)`) hands each route a fresh database session automatically.
 - Restarting the server and confirming data survives is the real test that a database (not memory) is being used.
 - Never commit `venv`/`.venv` folders or `.env` files — `.gitignore` should be set up *before* the first commit, not after.
+
+ ## Day 9 — Authentication (Password Hashing + JWT)
+
+Added user registration and login, with bcrypt password hashing and JWT-protected routes.
+
+### What I built
+- `User` table (id, username, email, hashed_password) — passwords are never stored in plain text
+- `POST /auth/register` — hashes the password with bcrypt, rejects duplicate usernames/emails (400)
+- `POST /auth/login` — verifies the submitted password against the stored hash, returns a JWT on success, 401 on failure
+- `POST /students` is now protected — requires a valid Bearer token, otherwise returns 401
+- Tested the full flow both through Swagger UI (`/docs`) and via curl with a real Authorization header
+
+### Challenges
+- Confused the `/students` and `/auth/register` endpoints at first while testing — an easy mix-up since Swagger lists all routes together.
+- Pasted the JWT into Swagger's Authorize field with quotes around it by mistake, which caused a 422; removing the quotes fixed it.
+- Hit "Couldn't connect to server" errors when testing via curl because uvicorn wasn't actually running in a separate terminal tab at the time.
+- Learned that JWTs are long (100+ characters) — using a shortened/truncated token instead of the full string causes decode failures.
+
+### What I learned
+- Never store plain-text passwords — bcrypt hashes are one-way, so even the server can't "recover" the original password, only verify a match.
+- A JWT carries a signed payload (like the username) that the server can trust without a database lookup on every request, as long as the signature checks out.
+- Running the API server and testing with curl requires two separate terminal sessions — one to keep the server alive, one to send requests.
+

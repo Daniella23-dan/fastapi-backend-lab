@@ -3,6 +3,7 @@ from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Session, create_engine, select
 
 from models import Student, User, UserRegister, UserLogin
@@ -14,6 +15,10 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 
 app = FastAPI(title="Student API")
+
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"],
+allow_credentials=True, allow_methods=["*"],
+allow_headers=["*"],)
 
 
 def get_session():
